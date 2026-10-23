@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Sabornica.eu</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabornica.eu - Glasanje i Zakoni</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --green: #28a745;
+            --orange: #fd7e14;
+            --red: #dc3545;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .filter-container {
+            margin-top: 10px;
+        }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .law-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .law-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .law-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .vote-btns {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-za { background-color: var(--green); }
+        .btn-suz { background-color: var(--orange); }
+        .btn-pro { background-color: var(--red); }
+
+        .results-bar {
+            display: flex;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e9ecef;
+            margin-top: 10px;
+        }
+
+        .res-za { background-color: var(--green); transition: width 0.3s; }
+        .res-suz { background-color: var(--orange); transition: width 0.3s; }
+        .res-pro { background-color: var(--red); transition: width 0.3s; }
+
+        .res-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #555;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Sabornica.eu</h1>
+        <p style="margin: 0; font-size: 14px; color: #666;">Glasanje građana o zakonskim prijedlozima</p>
+        <div class="filter-container">
+            <label for="region-select">Odaberi parlament: </label>
+            <select id="region-select" onchange="filterLaws()">
+                <option value="all">Svi parlamenti</option>
+                <option value="hr">Hrvatski sabor</option>
+                <option value="eu">EU Parlament</option>
+            </select>
+        </div>
+    </header>
+
+    <div id="laws-container"></div>
+
+    <script>
+        const laws = [
+            {
+                id: 1,
+                region: "hr",
+                title: "Prijedlog Zakona o porezu na nekretnine",
+                desc: "Uvođenje poreznih stopa na prazne stambene objekte i nekretnine koje se ne koriste za stanovanje.",
+                za: 42,
+                suz: 12,
+                pro: 110
+            },
+            {
+                id: 2,
+                region: "hr",
+                title: "Zakon o radu nedjeljom",
+                desc: "Ograničavanje rada trgovina nedjeljom na maksimalno 16 radnih nedjelja u godini.",
+                za: 85,
+                suz: 5,
+                pro: 30
+            },
+            {
+                id: 3,
+                region: "eu",
+                title: "Uredba o umjetnoj inteligenciji (AI Act)",
+                desc: "Stroga regulacija primjene generativne AI tehnologije i zaštita privatnosti građana Europske unije.",
+                za: 140,
+                suz: 20,
+                pro: 15
+            }
+        ];
+
+        function renderLaws(filter = 'all') {
+            const container = document.getElementById('laws-container');
+            container.innerHTML = '';
+
+            const filtered = filter === 'all' ? laws : laws.filter(l => l.region === filter);
+
+            filtered.forEach(law => {
+                const total = law.za + law.suz + law.pro || 1;
+                const pZa = Math.round((law.za / total) * 100);
+                const pSuz = Math.round((law.suz / total) * 100);
+                const pPro = Math.round((law.pro / total) * 100);
+
+                const card = document.createElement('div');
+                card.className = 'law-card';
+                card.innerHTML = `
+                    <div class="law-title">${law.title}</div>
+                    <div class="law-desc">${law.desc}</div>
+                    <div class="vote-btns">
+                        <button class="btn btn-za" onclick="vote(${law.id}, 'za')">ZA</button>
+                        <button class="btn btn-suz" onclick="vote(${law.id}, 'suz')">SUZDRŽAN</button>
+                        <button class="btn btn-pro" onclick="vote(${law.id}, 'pro')">PROTIV</button>
+                    </div>
+                    <div class="results-bar" id="res-bar-${law.id}">
+                        <div class="res-za" style="width: ${pZa}%"></div>
+                        <div class="res-suz" style="width: ${pSuz}%"></div>
+                        <div class="res-pro" style="width: ${pPro}%"></div>
+                    </div>
+                    <div class="res-text">
+                        <span>Za: ${pZa}%</span>
+                        <span>Suzdržan: ${pSuz}%</span>
+                        <span>Protiv: ${pPro}%</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function vote(id, option) {
+            const law = laws.find(l => l.id === id);
+            if (law) {
+                law[option]++;
+                renderLaws(document.getElementById('region-select').value);
+            }
+        }
+
+        function filterLaws() {
+            const val = document.getElementById('region-select').value;
+            renderLaws(val);
+        }
+
+        renderLaws();
+    </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
